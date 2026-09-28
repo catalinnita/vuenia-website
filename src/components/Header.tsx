@@ -28,9 +28,20 @@ export default function Header() {
           ))}
         </nav>
 
-        <Button href="/beta">
-          Request beta access
-        </Button>
+        <div className="flex items-center gap-6">
+          {/* Plain <a>, not <Link>: /app is the separately deployed admin app (proxied
+              via next.config.ts rewrites), so it needs a full page load, not
+              client-side navigation within this app. */}
+          <a
+            href="/app"
+            className="font-display text-[15px] font-medium text-body transition-colors hover:text-ink"
+          >
+            Log in
+          </a>
+          <Button href="/beta">
+            Request beta access
+          </Button>
+        </div>
       </div>
     </header>
   );
