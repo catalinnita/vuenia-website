@@ -1,4 +1,14 @@
-import type { CSSProperties, ReactNode } from "react";
+"use client";
+
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+
+// Hero centerpiece: a live run of a real Pipeline, played on loop. The agents work in
+// sequence — each takes what the previous one produced — so it's drawn the way the
+// admin app shows a run: one ordered list on a timeline, one step active at a time
+// (enlarged, with the admin's own status pill), including a pause for human review
+// on the script (see HumanControl's section). The "Pipeline" node beside the list is
+// the real coordinator (agent/orchestrator_agent.py) — wired to every agent, it
+// dispatches each step in turn, shown by the live connector to the active agent.
 
 // Line icons (Lucide paths, 24×24, stroked) — inlined rather than adding an icon
 // dependency for six glyphs.
@@ -45,192 +55,235 @@ const ICONS: Record<string, ReactNode> = {
   ),
 };
 
-// One colour per agent, carried through its icon tile, check badge, track and
-// travelling dots — so each connection reads as that agent's own lane. Full class
-// strings (not built from the hue) so Tailwind can see them.
 const AGENTS = [
-  {
-    name: "Researcher",
-    detail: "Pulled 4 sources",
-    icon: "search",
-    x: 22, y: 9,
-    pos: "top-[2%] left-[4%]",
-    tilt: "rotate-[-6deg]",
-    tile: "bg-sky-100 text-sky-600",
-    badge: "bg-sky-500",
-    track: "stroke-sky-500/25",
-    dot: "bg-sky-500 shadow-[0_0_8px_2px_rgba(14,165,233,0.45)]",
-  },
-  {
-    name: "Scriptwriter",
-    detail: "Wrote 1,050 words",
-    icon: "pen",
-    x: 80, y: 13,
-    pos: "top-[6%] right-[2%]",
-    tilt: "rotate-[4deg]",
-    tile: "bg-violet-100 text-violet-600",
-    badge: "bg-violet-500",
-    track: "stroke-violet-500/25",
-    dot: "bg-violet-500 shadow-[0_0_8px_2px_rgba(139,92,246,0.45)]",
-  },
-  {
-    name: "Narrator",
-    detail: "Voiced 3 speakers",
-    icon: "mic",
-    x: 14, y: 45,
-    pos: "top-[38%] left-[-4%]",
-    tilt: "rotate-[3deg]",
-    tile: "bg-orange-100 text-orange-600",
-    badge: "bg-orange-500",
-    track: "stroke-orange-500/25",
-    dot: "bg-orange-500 shadow-[0_0_8px_2px_rgba(249,115,22,0.45)]",
-  },
-  {
-    name: "Slide designer",
-    detail: "Built 12 slides",
-    icon: "slides",
-    x: 88, y: 47,
-    pos: "top-[40%] right-[-6%]",
-    tilt: "rotate-[-4deg]",
-    tile: "bg-lime-100 text-lime-700",
-    badge: "bg-lime-500",
-    track: "stroke-lime-500/30",
-    dot: "bg-lime-500 shadow-[0_0_8px_2px_rgba(132,204,22,0.5)]",
-  },
-  {
-    name: "Video editor",
-    detail: "Cut 9:42 of video",
-    icon: "film",
-    x: 24, y: 87,
-    pos: "bottom-[6%] left-[6%]",
-    tilt: "rotate-[5deg]",
-    tile: "bg-rose-100 text-rose-600",
-    badge: "bg-rose-500",
-    track: "stroke-rose-500/25",
-    dot: "bg-rose-500 shadow-[0_0_8px_2px_rgba(244,63,94,0.45)]",
-  },
-  {
-    name: "Publisher",
-    detail: "Posted to YouTube",
-    icon: "send",
-    x: 74, y: 91,
-    pos: "bottom-[2%] right-[8%]",
-    tilt: "rotate-[-3deg]",
-    tile: "bg-emerald-100 text-emerald-600",
-    badge: "bg-emerald-500",
-    track: "stroke-emerald-500/25",
-    dot: "bg-emerald-500 shadow-[0_0_8px_2px_rgba(16,185,129,0.45)]",
-  },
+  { name: "Researcher", detail: "Pulled 4 sources", time: "0:41", icon: "search", tile: "bg-sky-100 text-sky-600" },
+  { name: "Scriptwriter", detail: "Wrote 1,050 words", time: "2:12", icon: "pen", tile: "bg-violet-100 text-violet-600", review: true },
+  { name: "Narrator", detail: "Voiced 3 speakers", time: "1:23", icon: "mic", tile: "bg-orange-100 text-orange-600" },
+  { name: "Slide designer", detail: "Built 12 slides", time: "6:58", icon: "slides", tile: "bg-lime-100 text-lime-700" },
+  { name: "Video editor", detail: "Cut 9:42 of video", time: "0:19", icon: "film", tile: "bg-rose-100 text-rose-600" },
+  { name: "Publisher", detail: "Posted to YouTube", time: "0:06", icon: "send", tile: "bg-emerald-100 text-emerald-600" },
 ] as const;
 
-// The hero's centerpiece — echoes dropship.io's fanned product-data-card hero, but
-// each card is one of the real agents in Vuenia's pipeline, fanned around the
-// pipeline they make up, so the hero doubles as a diagram of the actual product.
-// `x`/`y` are each card's approximate centre (in % of the square) — the
-// connectors (track + travelling dots) run from the hub to there and hide under
-// the card.
-export default function PipelineFan() {
-  return (
-    // Laid out at one fixed size (cards are fixed-width, positions are %), then
-    // zoomed down as a whole where its column is narrower than 36rem — phones, and
-    // the two-column hero at lg — so it shrinks like an image instead of the cards
-    // piling onto each other.
-    <div className="relative mx-auto h-[36rem] w-[36rem] max-sm:[zoom:0.58] lg:[zoom:0.8] xl:[zoom:1]">
-      {/* Faint track per connection, so the path reads even between dots. */}
-      <svg
-        aria-hidden
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-        className="absolute inset-0 h-full w-full overflow-visible"
-      >
-        {AGENTS.map((agent) => (
-          <line
-            key={agent.name}
-            x1="50"
-            y1="50"
-            x2={agent.x}
-            y2={agent.y}
-            vectorEffect="non-scaling-stroke"
-            strokeWidth="1"
-            className={agent.track}
-          />
-        ))}
-      </svg>
+type Frame = { step: number; mode: "running" | "review" | "done"; ms: number };
 
-      {/* Dots flowing hub → agent: a few per connection, staggered along the same
-          cycle, with each connection offset so they don't all pulse in unison. */}
-      {AGENTS.map((agent, i) =>
-        [0, 1, 2].map((n) => (
-          <span
-            key={`${agent.name}-${n}`}
-            aria-hidden
-            style={
-              {
-                "--x": `${agent.x}%`,
-                "--y": `${agent.y}%`,
-                animationDelay: `${-(n * 1.33 + i * 0.6)}s`,
-              } as CSSProperties
-            }
-            className={`absolute h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 animate-travel rounded-full opacity-0 motion-reduce:hidden ${agent.dot}`}
-          />
-        )),
+// The run, as a timeline of frames: each step runs, the script also waits on review,
+// then everything holds "done" for a beat before the loop restarts.
+const FRAMES: Frame[] = [
+  ...AGENTS.flatMap((agent, i): Frame[] => [
+    { step: i, mode: "running", ms: 1800 },
+    ...("review" in agent ? [{ step: i, mode: "review" as const, ms: 2000 }] : []),
+  ]),
+  { step: AGENTS.length, mode: "done", ms: 3200 },
+];
+
+type Status = "queued" | "running" | "review" | "done";
+
+function statusOf(i: number, frame: Frame): Status {
+  if (i < frame.step) return "done";
+  if (i > frame.step) return "queued";
+  return frame.mode === "done" ? "done" : frame.mode;
+}
+
+function pipelineLine(frame: Frame): string {
+  if (frame.mode === "done") return "Run complete";
+  const agent = AGENTS[frame.step];
+  if (frame.mode === "review") return "Waiting on you";
+  return frame.step === 0 ? `Starting → ${agent.name}` : `→ ${agent.name}`;
+}
+
+export default function PipelineFan() {
+  // Starts on the finished state (also what server render and reduced-motion users
+  // see), then plays from the top once mounted.
+  const [frameIndex, setFrameIndex] = useState(FRAMES.length - 1);
+  const frame = FRAMES[frameIndex];
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setTimeout(
+      () => setFrameIndex((f) => (f + 1) % FRAMES.length),
+      frame.ms,
+    );
+    return () => clearTimeout(id);
+  }, [frame]);
+
+  // Connectors from the Pipeline node to every agent's icon, in px against the
+  // wrapper (not a stretched viewBox), measured from the DOM. Rows change height as
+  // the active step grows, so after each frame change they're re-measured on every
+  // animation frame until the grow transition has settled.
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const hubRef = useRef<HTMLSpanElement>(null);
+  const iconRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const [geo, setGeo] = useState<{ w: number; h: number; from: [number, number]; to: [number, number][] } | null>(null);
+
+  useLayoutEffect(() => {
+    function measure() {
+      const wrap = wrapRef.current;
+      const hub = hubRef.current;
+      if (!wrap || !hub) return;
+      const w = wrap.getBoundingClientRect();
+      const h = hub.getBoundingClientRect();
+      setGeo({
+        w: w.width,
+        h: w.height,
+        from: [h.right - w.left, h.top + h.height / 2 - w.top],
+        to: iconRefs.current.map((el) => {
+          const r = el?.getBoundingClientRect();
+          return r ? [r.left - w.left, r.top + r.height / 2 - w.top] : [0, 0];
+        }),
+      });
+    }
+    let raf = 0;
+    const until = performance.now() + 650;
+    const tick = () => {
+      measure();
+      if (performance.now() < until) raf = requestAnimationFrame(tick);
+    };
+    tick();
+    window.addEventListener("resize", measure);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", measure);
+    };
+  }, [frame]);
+
+  return (
+    <div ref={wrapRef} aria-hidden className="relative mx-auto flex w-full max-w-[34rem] items-center gap-10 max-sm:gap-6 lg:left-10">
+      {/* Connectors: Pipeline → each agent. The one being worked on is dark with
+          dashes flowing toward the agent; finished ones mid-grey; queued ones faint. */}
+      {geo && (
+        <svg className="pointer-events-none absolute inset-0 overflow-visible" width={geo.w} height={geo.h}>
+          {geo.to.map(([x, y], i) => {
+            const [fx, fy] = geo.from;
+            const mid = fx + (x - fx) * 0.55;
+            const status = statusOf(i, frame);
+            const active = status === "running" || status === "review";
+            return (
+              <path
+                key={i}
+                d={`M ${fx} ${fy} C ${mid} ${fy}, ${mid} ${y}, ${x} ${y}`}
+                fill="none"
+                strokeLinecap="round"
+                strokeWidth={active ? 2 : 1.25}
+                strokeDasharray={active ? "4 5" : undefined}
+                className={`transition-colors duration-300 ${
+                  active
+                    ? "animate-dash-flow stroke-ink motion-reduce:animate-none"
+                    : status === "done"
+                      ? "stroke-gray-300"
+                      : "stroke-gray-200"
+                }`}
+              />
+            );
+          })}
+        </svg>
       )}
 
-      {AGENTS.map((agent) => (
-        // Position and tilt live on separate elements on purpose. The animated
-        // dots below get their own GPU layers, which forces these overlapping cards
-        // onto layers too; if the layer itself were rotated, Chrome would rasterize
-        // it flat and then rotate the texture — blurry text. Keeping the layer
-        // (outer div) unrotated means the tilted card is painted into it at its
-        // angle, so text stays crisp.
-        <div key={agent.name} className={`absolute ${agent.pos}`}>
-          <div
-            className={`flex w-52 items-center gap-3 rounded-2xl border border-border bg-surface p-3.5 pr-4 shadow-[0_10px_30px_-10px_rgba(11,15,25,0.18)] ${agent.tilt}`}
-          >
-            <span className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${agent.tile}`}>
-              <svg
-                aria-hidden
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-5 w-5"
-              >
-                {ICONS[agent.icon]}
-              </svg>
-              {/* Done badge */}
-              <span
-                className={`absolute -right-1 -bottom-1 flex h-4 w-4 items-center justify-center rounded-full ring-2 ring-surface ${agent.badge}`}
-              >
-                <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="h-2.5 w-2.5">
-                  <path d="M20 6 9 17l-5-5" />
-                </svg>
-              </span>
-            </span>
-            <div className="min-w-0">
-              <p className="font-display text-[15px] leading-tight font-semibold text-ink">{agent.name}</p>
-              <p className="mt-0.5 text-xs text-muted">{agent.detail}</p>
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {/* Hub glow: pale tints of the six agents' colours as a soft conic halo
-          behind the sphere, slowly turning and breathing — kept light so it reads
-          as a glow, not a shadow. */}
-      <div
-        aria-hidden
-        className="absolute top-1/2 left-1/2 -mt-28 -ml-28 h-56 w-56 animate-glow rounded-full bg-[conic-gradient(from_0deg,#bae6fd,#ddd6fe,#fed7aa,#d9f99d,#fecdd3,#a7f3d0,#bae6fd)] blur-3xl motion-reduce:animate-none"
-      />
-
-      {/* Hub: a mid-graphite sphere — soft highlight top-left, deeper bottom-right. */}
-      <div className="absolute top-1/2 left-1/2 flex h-32 w-32 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full bg-[radial-gradient(circle_at_34%_26%,#6b7385_0%,#454c5c_45%,#2b303c_100%)] text-center shadow-[inset_-8px_-12px_24px_rgba(0,0,0,0.28),inset_4px_6px_14px_rgba(255,255,255,0.16),0_20px_40px_-16px_rgba(11,15,25,0.55)] ring-1 ring-white/15">
-        <span className="font-display text-xl leading-tight font-bold text-white">
-          6 agents
+      {/* The Pipeline: the coordinator handing each step to the next agent in turn. */}
+      <div className="relative z-10 flex w-24 shrink-0 flex-col items-center text-center max-sm:w-16">
+        <span
+          ref={hubRef}
+          className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-ink text-white shadow-[0_10px_24px_-10px_rgba(11,15,25,0.6)]"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative h-6 w-6">
+            <circle cx="12" cy="5" r="2.5" />
+            <circle cx="5" cy="19" r="2.5" />
+            <circle cx="19" cy="19" r="2.5" />
+            <path d="M12 7.5v4M12 11.5 6.5 17M12 11.5l5.5 5.5" />
+          </svg>
         </span>
-        <span className="mt-1 text-[11px] leading-tight text-white/70">one pipeline</span>
+        <p className="mt-2 font-display text-[15px] leading-tight font-semibold text-ink">Pipeline</p>
+        {/* Fixed height, so a longer or shorter status can't nudge the node. */}
+        <p className="mt-0.5 h-8 text-xs leading-4 text-muted max-sm:hidden">{pipelineLine(frame)}</p>
+      </div>
+
+      <div className="relative min-w-0 flex-1">
+        {/* The agents' own order, top to bottom. */}
+        <span className="absolute top-[2.75rem] bottom-[2.75rem] left-[21px] w-0.5 bg-gray-200 max-sm:top-[2.125rem] max-sm:bottom-[2.125rem]" />
+
+        <ol>
+          {AGENTS.map((agent, i) => {
+            const status = statusOf(i, frame);
+            const active = status === "running" || status === "review";
+            return (
+              // Every row is a fixed height with room for the enlarged state built in, and
+              // the active step grows purely by transform (1.5×, 1.25× on phones) around
+              // its icon's centre. So nothing else in the animation ever moves — not the
+              // other rows, the timeline, the Pipeline node, or the connectors' far ends.
+              <li
+                key={agent.name}
+                className="relative flex h-[5.5rem] items-center max-sm:h-[4.25rem]"
+              >
+                <div
+                  className={`flex w-full origin-[22px_50%] items-center gap-4 transition-transform duration-500 ease-out ${
+                    active ? "scale-150 max-sm:scale-125" : "scale-100"
+                  }`}
+                >
+                  <span
+                    ref={(el) => {
+                      iconRefs.current[i] = el;
+                    }}
+                    className={`relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors duration-300 ${
+                      status === "queued" ? "bg-gray-100 text-gray-300" : agent.tile
+                    }`}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5"
+                    >
+                      {ICONS[agent.icon]}
+                    </svg>
+                    {status === "done" && (
+                      <span className="absolute -right-1 -bottom-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 ring-2 ring-bg">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="h-2.5 w-2.5">
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                      </span>
+                    )}
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p
+                        className={`font-display text-[15px] leading-tight font-semibold transition-colors duration-300 ${
+                          status === "queued" ? "text-muted" : "text-ink"
+                        }`}
+                      >
+                        {agent.name}
+                      </p>
+                      {/* Same status pills as the admin app's StatusPill: amber with
+                          moving stripes while running, light blue awaiting review. */}
+                      {status === "running" && (
+                        <span className="animate-stripes inline-flex rounded-full bg-[#fffaeb] px-2 py-px text-[10px] font-medium text-[#dc6803]">
+                          running
+                        </span>
+                      )}
+                      {status === "review" && (
+                        <span className="inline-flex rounded-full bg-[#f0f9ff] px-2 py-px text-[10px] font-medium text-[#0ba5ec]">
+                          awaiting review
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-0.5 truncate text-xs text-muted">
+                      {status === "done" && (
+                        <>
+                          {agent.detail} · {agent.time}
+                        </>
+                      )}
+                      {status === "running" && "Working…"}
+                      {status === "review" && "Waiting for your approval"}
+                      {status === "queued" && "Queued"}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </div>
   );

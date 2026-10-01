@@ -4,6 +4,11 @@ import Footer from "@/components/Footer";
 import Button from "@/components/Button";
 import PipelineFan from "@/components/PipelineFan";
 import RotatingWord from "@/components/RotatingWord";
+import HumanControl from "@/components/HumanControl";
+import VerificationLoop from "@/components/VerificationLoop";
+import ContextSources from "@/components/ContextSources";
+import Scheduling from "@/components/Scheduling";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const BLUEPRINTS = [
   {
@@ -29,29 +34,6 @@ const BLUEPRINTS = [
     description: "A narrated script exported as PPTX, Google Slides, and more.",
     status: "Coming soon",
     color: "bg-pastel-lime",
-  },
-] as const;
-
-const HOW_IT_WORKS = [
-  {
-    n: "01",
-    title: "Pick a blueprint",
-    body: "Start from Basic, Podcast, Online course, or Slide deck — or build your own pipeline from scratch.",
-  },
-  {
-    n: "02",
-    title: "Configure the steps",
-    body: "Choose what feeds it context, which model writes each piece, which voices narrate it, and what needs your sign-off.",
-  },
-  {
-    n: "03",
-    title: "Run it",
-    body: "Trigger it manually or put it on a schedule. Every run is tracked step by step — input, output, cost, and timing.",
-  },
-  {
-    n: "04",
-    title: "Review, or don't",
-    body: "Full autonomy or a checkpoint anywhere. Don't like one slide? Edit just that piece and re-run from there.",
   },
 ] as const;
 
@@ -92,25 +74,6 @@ const PROVIDERS = [
   },
 ] as const;
 
-const VALUE_PROPS = [
-  {
-    title: "No-code pipeline builder",
-    body: "Add, remove, and reorder steps on a canvas — every Pipeline is configuration, not a codebase.",
-  },
-  {
-    title: "Bring your own data",
-    body: "Context agents pull from search, specific URLs, public or private APIs and databases — or a brief you type in.",
-  },
-  {
-    title: "Built-in fact-checking",
-    body: "Attach verification agents to any step — catch a wrong date, a banned phrase, an unsupported claim — before it ships.",
-  },
-  {
-    title: "A human checkpoint wherever you want one",
-    body: "Full autonomy, full manual control, or anything in between — set per step, per Pipeline.",
-  },
-] as const;
-
 export default function HomePage() {
   return (
     <>
@@ -147,12 +110,12 @@ export default function HomePage() {
 
         {/* Blueprints */}
         <section className="mx-auto max-w-7xl px-6 pb-24">
-          <h2 className="text-display-sm font-display font-bold text-ink md:text-display-md">
+          <h2 data-reveal="" className="text-display-sm font-display font-bold text-ink md:text-display-md">
             Built for more than one show
           </h2>
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {BLUEPRINTS.map((bp) => (
-              <div key={bp.name} className={`rounded-2xl ${bp.color} p-6`}>
+            {BLUEPRINTS.map((bp, i) => (
+              <div key={bp.name} data-reveal={i ? String(i) : ""} className={`rounded-2xl ${bp.color} p-6`}>
                 <div className="flex items-start justify-between">
                   <p className="font-display text-lg font-semibold text-ink">{bp.name}</p>
                   <span
@@ -169,32 +132,22 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* How it works */}
-        <section className="mx-auto max-w-7xl px-6 pb-24">
-          <div className="grid gap-12 lg:grid-cols-[minmax(0,320px)_1fr]">
-            <h2 className="text-display-sm font-display font-bold text-ink md:text-display-md">
-              How it works
-            </h2>
-            <div className="grid grid-cols-1 gap-10 sm:grid-cols-2">
-              {HOW_IT_WORKS.map((step) => (
-                <div key={step.n}>
-                  <p className="font-display text-sm font-semibold text-accent-500">{step.n}</p>
-                  <p className="mt-2 text-lg font-semibold text-ink">{step.title}</p>
-                  <p className="mt-2 text-sm text-body">{step.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Human control — replaces the old "How it works" step list */}
+        <HumanControl />
+
+        {/* Context gathering, then the verification loop */}
+        <ContextSources />
+        <VerificationLoop />
+        <Scheduling />
 
         {/* Providers */}
         <section className="mx-auto max-w-7xl px-6 pb-24">
-          <h2 className="text-display-sm font-display font-bold text-ink md:text-display-md">
+          <h2 data-reveal="" className="text-display-sm font-display font-bold text-ink md:text-display-md">
             Works with the models you already use
           </h2>
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {PROVIDERS.map((provider) => (
-              <div key={provider.name} className="rounded-2xl border border-border bg-surface p-6">
+            {PROVIDERS.map((provider, i) => (
+              <div key={provider.name} data-reveal={i ? String(i) : ""} className="rounded-2xl border border-border bg-surface p-6">
                 <div className="flex items-center gap-3">
                   <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${provider.tile}`}>
                     <svg aria-hidden viewBox="0 0 24 24" fill="currentColor" fillRule="evenodd" className="h-6 w-6">
@@ -214,7 +167,7 @@ export default function HomePage() {
 
         {/* Showcase */}
         <section className="mx-auto max-w-7xl px-6 pb-24">
-          <div className="relative isolate overflow-hidden rounded-3xl bg-ink px-8 py-14 text-center md:px-16">
+          <div data-reveal="" className="relative isolate overflow-hidden rounded-3xl bg-ink px-8 py-14 text-center md:px-16">
             {/* The show's two hosts frame the copy from either side; the
                 radial shade keeps the centred text legible where they overlap.
                 On narrow screens the card is too tall to frame anything, so the
@@ -259,32 +212,18 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Value props */}
-        <section className="mx-auto max-w-7xl px-6 pb-24">
-          <h2 className="text-display-sm font-display font-bold text-ink md:text-display-md">
-            Why teams choose Vuenia
-          </h2>
-          <div className="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-2xl bg-border sm:grid-cols-2">
-            {VALUE_PROPS.map((vp) => (
-              <div key={vp.title} className="bg-surface p-8">
-                <p className="text-lg font-semibold text-ink">{vp.title}</p>
-                <p className="mt-2 text-sm text-body">{vp.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* Final CTA */}
-        <section className="mx-auto max-w-7xl px-6 pb-28">
-          <div className="rounded-3xl bg-accent-50 px-8 py-16 text-center md:px-16">
-            <h2 className="text-display-sm font-display font-bold text-ink md:text-display-md">
+        <section className="mx-auto max-w-7xl px-6 pb-8">
+          <div className="text-center">
+            <h2 data-reveal="" className="text-display-sm font-display font-bold text-ink md:text-display-md">
               Your first episode doesn&apos;t have to take a week.
             </h2>
-            <p className="mx-auto mt-4 max-w-md text-body">
+            <p data-reveal="1" className="mx-auto mt-4 max-w-md text-body">
               Set up a Pipeline once. Run it as many times as you need — daily,
               weekly, on demand.
             </p>
-            <div className="mt-8">
+            <div data-reveal="2" className="mt-8">
               <Button href="/beta">Request beta access</Button>
             </div>
           </div>
@@ -292,6 +231,7 @@ export default function HomePage() {
       </main>
 
       <Footer />
+      <ScrollReveal />
     </>
   );
 }

@@ -52,45 +52,6 @@
   --color-pastel-mint: #dcf3ea;
   --color-pastel-peach: #fbe3d6;
   --color-pastel-sky: #dcebfb;
-
-  /* A dot travelling from the hero's hub (the square's centre) out to one agent
-     card at (--x, --y), fading in and out at the ends. Positions are % of the
-     square, so the dots stay round at any size (unlike a stretched SVG). */
-  --animate-travel: travel 4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-  @keyframes travel {
-    0% {
-      left: 50%;
-      top: 50%;
-      opacity: 0;
-    }
-    15%,
-    80% {
-      opacity: 1;
-    }
-    100% {
-      left: var(--x);
-      top: var(--y);
-      opacity: 0;
-    }
-  }
-
-  /* The hero hub's colour glow: one slow turn while breathing out and back in,
-     so the agent colours drift around the sphere. */
-  --animate-glow: glow 12s linear infinite;
-  @keyframes glow {
-    0% {
-      transform: rotate(0deg) scale(0.9);
-      opacity: 0.7;
-    }
-    50% {
-      transform: rotate(180deg) scale(1.1);
-      opacity: 1;
-    }
-    100% {
-      transform: rotate(360deg) scale(0.9);
-      opacity: 0.7;
-    }
-  }
 }
 
 body {
@@ -114,7 +75,7 @@ body::before {
   pointer-events: none;
   background-image:
     radial-gradient(60rem 42rem at 92% 0%, rgb(0 119 255 / 0.55), transparent 62%),
-    radial-gradient(40rem 30rem at 62% 30%, rgb(120 90 255 / 0.28), transparent 65%),
+    radial-gradient(40rem 30rem at 62% 30%, rgb(255 255 255 / 0.85), transparent 65%),
     radial-gradient(50rem 36rem at -6% 25%, rgb(182 228 70 / 0.50), transparent 62%),
     radial-gradient(60rem 42rem at 30% 85%, rgb(255 140 100 / 0.40), transparent 62%),
     radial-gradient(rgb(11 15 25 / 0.10) 1px, transparent 1.2px);
@@ -131,4 +92,77 @@ h1, h2, h3, h4 {
 ::selection {
   background: var(--color-accent-100);
   color: var(--color-accent-700);
+}
+
+/* Hero: dashes flowing along the Pipeline → active-agent connector, toward the agent.
+   Offset = one dash+gap (4 + 5) so the loop is seamless. */
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -9;
+  }
+}
+
+@utility animate-dash-flow {
+  animation: dash-flow 0.6s linear infinite;
+}
+
+/* The admin app's "running" status-pill animation (admin/src/app/globals.css),
+   copied so the hero's run shows the exact same state: diagonal stripes in the
+   pill's own text colour, sliding by one seamless square tile per loop. */
+@keyframes stripes-move {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 1rem 0;
+  }
+}
+
+@utility animate-stripes {
+  background-image: linear-gradient(
+    45deg,
+    color-mix(in oklab, currentColor 18%, transparent) 25%,
+    transparent 25%,
+    transparent 50%,
+    color-mix(in oklab, currentColor 18%, transparent) 50%,
+    color-mix(in oklab, currentColor 18%, transparent) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 1rem 1rem;
+  animation: stripes-move 0.9s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-stripes {
+    animation: none;
+  }
+}
+
+/* Scroll reveal (src/components/ScrollReveal.tsx): elements marked data-reveal fade
+   up the first time they enter the viewport. Only hidden once the script has run
+   (.reveal-ready), so no-JS visitors see everything. data-reveal="1|2|3" staggers. */
+[data-reveal] {
+  transition:
+    opacity 0.7s ease-out,
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+[data-reveal="1"] {
+  transition-delay: 0.1s;
+}
+[data-reveal="2"] {
+  transition-delay: 0.2s;
+}
+[data-reveal="3"] {
+  transition-delay: 0.3s;
+}
+.reveal-ready [data-reveal]:not([data-revealed]) {
+  opacity: 0;
+  transform: translateY(28px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-ready [data-reveal]:not([data-revealed]) {
+    opacity: 1;
+    transform: none;
+  }
 }
