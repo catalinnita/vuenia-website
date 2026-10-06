@@ -25,6 +25,7 @@ const TOKEN_OPTIONS = [
     tagline: "Nothing to set up.",
     body: "We provide the model and voice access. Usage is billed at exactly what the providers charge us — no markup — and added to your Vuenia bill. One invoice, no provider accounts, no keys to manage.",
     cost: "Provider rates, billed by Vuenia at cost",
+    comingSoon: true,
   },
   {
     name: "Bring your own keys",
@@ -53,7 +54,7 @@ const FAQS = [
   },
   {
     q: "Is there a free trial?",
-    a: "During the beta, requested accounts get a limited number of free runs, no card required, so you can build and test a real Pipeline before paying anything.",
+    a: "Yes — every plan starts with a 7-day free trial. During the beta, requested accounts get a limited number of free runs, no card required, so you can build and test a real Pipeline before paying anything.",
   },
 ] as const;
 
@@ -88,6 +89,7 @@ export default function PricingPage() {
                   <span className="font-display text-5xl font-bold text-ink">{PLATFORM_FEE}</span>
                   <span className="text-sm text-muted">/month</span>
                 </p>
+                <p className="mt-2 text-sm font-medium text-accent-700">7-day free trial</p>
                 <p className="mt-4 text-sm text-body">
                   The pipeline builder, orchestration, rendering, and hosting — the
                   same for everyone, however you pay for tokens.
@@ -108,16 +110,32 @@ export default function PricingPage() {
             + tokens, at cost. Pick where they come from.
           </p>
           <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-            {TOKEN_OPTIONS.map((option) => (
-              <div key={option.name} className="flex flex-col rounded-3xl border border-border bg-surface p-8">
-                <p className="text-lg font-semibold text-ink">{option.name}</p>
-                <p className="mt-1 text-sm text-muted">{option.tagline}</p>
-                <p className="mt-4 flex-1 text-sm text-body">{option.body}</p>
-                <p className="mt-6 rounded-xl bg-accent-50 px-4 py-3 text-sm font-medium text-accent-700">
-                  {option.cost}
-                </p>
-              </div>
-            ))}
+            {TOKEN_OPTIONS.map((option) => {
+              const comingSoon = "comingSoon" in option;
+              return (
+                <div
+                  key={option.name}
+                  aria-disabled={comingSoon || undefined}
+                  className={`relative flex flex-col rounded-3xl border border-border bg-surface p-8 ${
+                    comingSoon ? "select-none" : ""
+                  }`}
+                >
+                  {comingSoon && (
+                    <span className="absolute right-6 top-6 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
+                      Coming soon
+                    </span>
+                  )}
+                  <div className={`flex flex-1 flex-col ${comingSoon ? "opacity-50 grayscale" : ""}`}>
+                    <p className="text-lg font-semibold text-ink">{option.name}</p>
+                    <p className="mt-1 text-sm text-muted">{option.tagline}</p>
+                    <p className="mt-4 flex-1 text-sm text-body">{option.body}</p>
+                    <p className="mt-6 rounded-xl bg-accent-50 px-4 py-3 text-sm font-medium text-accent-700">
+                      {option.cost}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 

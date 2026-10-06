@@ -82,17 +82,24 @@ export default function HomePage() {
       <main>
         {/* Hero */}
         <section className="mx-auto max-w-7xl px-6 pt-20 pb-24">
-          <div className="grid items-center gap-16 lg:grid-cols-2">
-            <div>
-              <h1 className="text-display-md font-display font-bold text-ink lg:text-display-xl">
-                Publish{" "}
-                <RotatingWord
-                  words={["podcasts", "videos", "courses", "slide decks"]}
-                  className="text-accent-500"
-                />
-                without a production team.
-              </h1>
-              <p className="mt-6 max-w-lg text-lg text-body">
+          {/* Stacked (below lg): title, diagram, then the rest of the copy, all centred.
+              From lg the title and copy share the left column, the diagram the right. */}
+          <div className="grid gap-y-10 text-center lg:grid-cols-2 lg:gap-x-16 lg:gap-y-0 lg:text-left">
+            <h1 className="text-display-md font-display font-bold text-ink lg:col-start-1 lg:row-start-1 lg:self-end lg:text-display-xl">
+              Publish{" "}
+              <RotatingWord
+                words={["podcasts", "videos", "courses", "slide decks"]}
+                className="text-accent-500"
+              />
+              without a production team.
+            </h1>
+
+            <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
+              <PipelineFan />
+            </div>
+
+            <div className="lg:col-start-1 lg:row-start-2">
+              <p className="mx-auto max-w-lg text-lg text-body lg:mx-0 lg:mt-6">
                 A team of AI agents does the legwork — researching, scripting,
                 narrating, and editing. You choose where to step in: approve the
                 outline, rewrite a line, swap a voice, or take the wheel
@@ -103,8 +110,6 @@ export default function HomePage() {
                 <Button href="/beta">Request beta access</Button>
               </div>
             </div>
-
-            <PipelineFan />
           </div>
         </section>
 

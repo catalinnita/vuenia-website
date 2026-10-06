@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Logo from "./Logo";
 import Button from "./Button";
+import MobileMenu from "./MobileMenu";
 
 const NAV_LINKS = [
   { href: "/features", label: "Features" },
@@ -12,7 +13,7 @@ export default function Header() {
   return (
     <header className="mx-auto max-w-7xl px-6 pt-6">
       <div className="flex items-center justify-between">
-        <Link href="/" aria-label="Vuenia home">
+        <Link href="/" aria-label="Vuenia home" className="relative z-50">
           <Logo className="h-8 w-auto" />
         </Link>
 
@@ -28,7 +29,7 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-6">
+        <div className="hidden items-center gap-6 md:flex">
           {/* Plain <a>, not <Link>: /app is the separately deployed admin app (proxied
               via next.config.ts rewrites), so it needs a full page load, not
               client-side navigation within this app. */}
@@ -42,6 +43,8 @@ export default function Header() {
             Request beta access
           </Button>
         </div>
+
+        <MobileMenu links={NAV_LINKS} />
       </div>
     </header>
   );
