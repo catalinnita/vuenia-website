@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Script from "next/script";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -28,6 +29,8 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
+const GOOGLE_TAG_ID = "AW-17915911268";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${outfit.variable} ${inter.variable}`}>
@@ -35,6 +38,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <Analytics />
         <SpeedInsights />
+        {/* Google tag (gtag.js) — Google Ads conversion tracking. Loaded after the page
+            is interactive so it never delays first render. */}
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_TAG_ID}`} strategy="afterInteractive" />
+        <Script id="google-tag" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GOOGLE_TAG_ID}');`}
+        </Script>
       </body>
     </html>
   );
