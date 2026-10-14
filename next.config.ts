@@ -7,6 +7,12 @@ import type { NextConfig } from "next";
 const ADMIN_ORIGIN = process.env.ADMIN_ORIGIN?.replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
+  // Inline the (small, ~17 KB) stylesheet into each page's HTML instead of a separate,
+  // render-blocking request — first paint no longer waits on a CSS round trip. Worth it
+  // for a marketing site where most visits are one or two pages; production builds only.
+  experimental: {
+    inlineCss: true,
+  },
   // beforeFiles, not the default afterFiles: /app/* must be proxied untouched, before
   // this app's own routing. Otherwise Next 16's segment prefetches (RSC requests with a
   // `next-router-segment-prefetch` header) get rewritten here to this app's
