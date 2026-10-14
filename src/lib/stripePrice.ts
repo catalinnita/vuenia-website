@@ -31,7 +31,17 @@ export async function getPlatformPrice(): Promise<PlatformPrice | null> {
       recurring: { interval: string } | null;
     };
     const body = await res.json();
-    const price = (id.startsWith("prod_") ? body.default_price : body) as Price | null;
+    let price = (id.startsWith("prod_") ? body.default_price : body) as Price | null;
+    // A product whose default price isn't usable in USD: fall back to its active
+    // recurring USD price (same rule as api/checkout).
+    if (id.startsWith("prod_") && !(price?.currency === "usd" || price?.currency_options?.usd)) {
+      const list = await fetch(`https://api.stripe.com/v1/prices?product=${id}&active=true&type=recurring&limit=20`, {
+        headers: { Authorization: `Bearer ${key}` },
+        next: { revalidate: 3600 },
+      });
+      const prices = ((await list.json()).data ?? []) as Price[];
+      price = prices.find((p) => p.currency === "usd") ?? price;
+    }
     // Vuenia charges in USD (credit and provider costs are in dollars): use the price's
     // USD amount — its own, or its USD currency option on a multi-currency price.
     const usdCents = price?.currency === "usd" ? price.unit_amount : price?.currency_options?.usd?.unit_amount;
