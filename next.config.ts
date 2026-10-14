@@ -7,12 +7,19 @@ import type { NextConfig } from "next";
 const ADMIN_ORIGIN = process.env.ADMIN_ORIGIN?.replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
+  // beforeFiles, not the default afterFiles: /app/* must be proxied untouched, before
+  // this app's own routing. Otherwise Next 16's segment prefetches (RSC requests with a
+  // `next-router-segment-prefetch` header) get rewritten here to this app's
+  // `<path>.segments/…` form first, and the admin — which resolves those itself from
+  // the original URL — answers every prefetch with a 404.
   async rewrites() {
-    if (!ADMIN_ORIGIN) return [];
-    return [
-      { source: "/app", destination: `${ADMIN_ORIGIN}/app` },
-      { source: "/app/:path*", destination: `${ADMIN_ORIGIN}/app/:path*` },
-    ];
+    if (!ADMIN_ORIGIN) return { beforeFiles: [] };
+    return {
+      beforeFiles: [
+        { source: "/app", destination: `${ADMIN_ORIGIN}/app` },
+        { source: "/app/:path*", destination: `${ADMIN_ORIGIN}/app/:path*` },
+      ],
+    };
   },
   images: {
     remotePatterns: [{ protocol: "https", hostname: "a.storyblok.com" }],
