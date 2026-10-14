@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
+import CookieSettingsLink from "./consent/CookieSettingsLink";
 
 const COLUMNS = [
   {
@@ -13,6 +14,10 @@ const COLUMNS = [
   {
     title: "Built with Vuenia",
     links: [{ href: "https://www.youtube.com/@TheMorningBellAI", label: "The Morning Bell ↗" }],
+  },
+  {
+    title: "Legal",
+    links: [{ href: "/privacy", label: "Privacy policy" }],
   },
 ];
 
@@ -40,6 +45,11 @@ export default function Footer() {
                     </Link>
                   </li>
                 ))}
+                {col.title === "Legal" && (
+                  <li>
+                    <CookieSettingsLink className="text-sm text-body transition-colors hover:text-ink" />
+                  </li>
+                )}
               </ul>
             </div>
           ))}
