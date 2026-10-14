@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { CREDIT_OPTIONS } from "@/lib/credit";
 import { SIGNUP_URL } from "@/components/Button";
+import { withTermsConsent } from "@/lib/legal";
 
 // Pricing-page checkout, before any account exists: the platform subscription with a
 // 7-day trial (card required), plus the starting credit as a one-time charge if one was
@@ -56,7 +57,9 @@ export async function POST(request: Request) {
     const priceId = await platformPriceId(stripe);
     if (!priceId) return back("unavailable");
 
-    const session = await stripe.checkout.sessions.create({
+    // Required "I agree to the Terms" checkbox (see lib/legal.ts).
+    const session = await withTermsConsent((terms) => stripe.checkout.sessions.create({
+      ...terms,
       mode: "subscription",
       // Everything in USD: the credit line is dollars, and a multi-currency platform price
       // is charged in its USD option (Stripe requires one currency per session).
@@ -81,7 +84,7 @@ export async function POST(request: Request) {
       metadata: { kind: "signup", credit_usd: String(credit) },
       success_url: `${origin}${SIGNUP_URL}?checkout_session={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing`,
-    });
+    }));
     return NextResponse.redirect(session.url!, 303);
   } catch (e) {
     console.error("Stripe checkout failed:", e);

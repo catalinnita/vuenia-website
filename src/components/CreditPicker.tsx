@@ -53,6 +53,15 @@ export default function CreditPicker() {
         {ownKeys ? "Start 7-day free trial" : "Buy and start trial"}
       </button>
       <p className="mt-3 text-xs text-muted">
+        By continuing you agree to our{" "}
+        <a href="/terms" className="underline underline-offset-2 hover:text-ink">
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a href="/privacy" className="underline underline-offset-2 hover:text-ink">
+          Privacy Policy
+        </a>
+        .{" "}
         {ownKeys
           ? "No charge for 7 days. Cancel any time from your account."
           : `Only the $${amount} credit is charged today — the subscription starts after 7 days. Cancel any time.`}
