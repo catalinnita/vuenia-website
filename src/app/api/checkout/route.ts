@@ -40,6 +40,9 @@ export async function POST(request: Request) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
+      // Everything in USD: the credit line is dollars, and a multi-currency platform price
+      // is charged in its USD option (Stripe requires one currency per session).
+      currency: "usd",
       payment_method_collection: "always",
       line_items: [
         { price: priceId, quantity: 1 },
