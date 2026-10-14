@@ -51,7 +51,7 @@ const FAQS = [
   },
   {
     q: "How do I get access?",
-    a: "Vuenia is invite-only during the beta. Request access and we'll reach out once a spot opens up.",
+    a: "Sign up with your email or Google account. Then add your own API keys or buy a little Vuenia credit, and start your first Pipeline.",
   },
 ] as const;
 

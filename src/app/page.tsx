@@ -106,8 +106,11 @@ export default function HomePage() {
                 entirely. The agents handle the production; the creative calls
                 stay yours.
               </p>
-              <div className="mt-8">
-                <Button href="/beta">Request beta access</Button>
+              <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+                <Button href="/pricing">Start 7-day free trial</Button>
+                <Button href="/demo" variant="outline">
+                  Request a private demo
+                </Button>
               </div>
             </div>
           </div>
@@ -229,7 +232,7 @@ export default function HomePage() {
               weekly, on demand.
             </p>
             <div data-reveal="2" className="mt-8">
-              <Button href="/beta">Request beta access</Button>
+              <Button href="/pricing">Start 7-day free trial</Button>
             </div>
           </div>
         </section>

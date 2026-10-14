@@ -39,9 +39,7 @@ export default function Header() {
           >
             Log in
           </a>
-          <Button href="/beta">
-            Request beta access
-          </Button>
+          <Button href="/pricing">Start 7-day free trial</Button>
         </div>
 
         <MobileMenu links={NAV_LINKS} />

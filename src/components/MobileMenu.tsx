@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Button from "./Button";
 
-// The header's nav, Log in, and the beta CTA, folded behind a burger below md.
+// The header's nav, Log in, and the sign-up CTA, folded behind a burger below md.
 // Closes on any link tap, Escape, or widening past md.
 export default function MobileMenu({ links }: { links: readonly { href: string; label: string }[] }) {
   const [open, setOpen] = useState(false);
@@ -65,7 +65,7 @@ export default function MobileMenu({ links }: { links: readonly { href: string; 
             >
               Log in
             </a>
-            <Button href="/beta">Request beta access</Button>
+            <Button href="/pricing">Start 7-day free trial</Button>
           </div>
         </div>
       )}

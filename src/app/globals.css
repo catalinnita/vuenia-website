@@ -166,3 +166,13 @@ h1, h2, h3, h4 {
     transform: none;
   }
 }
+
+/* Native <select> with a custom chevron, so its arrow sits inside the padding instead of
+   against the edge (Chrome ignores padding-right for its built-in arrow). */
+.select-chevron {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23667085' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-size: 18px 18px;
+  background-position: right 14px center;
+  background-repeat: no-repeat;
+}
