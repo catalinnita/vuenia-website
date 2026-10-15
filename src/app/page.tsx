@@ -174,7 +174,7 @@ export default function HomePage() {
         </section>
 
         {/* Showcase */}
-        <section className="mx-auto max-w-7xl px-6 pb-24">
+        <section id="the-morning-bell" className="mx-auto max-w-7xl scroll-mt-24 px-6 pb-24">
           <div data-reveal="" className="relative isolate overflow-hidden rounded-3xl bg-ink px-8 py-14 text-center md:px-16">
             {/* The show's two hosts frame the copy from either side; the
                 radial shade keeps the centred text legible where they overlap.

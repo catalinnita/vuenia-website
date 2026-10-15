@@ -9,6 +9,8 @@ const COLUMNS = [
       { href: "/features", label: "Features" },
       { href: "/pricing", label: "Pricing" },
       { href: "/faq", label: "FAQ" },
+      { href: "/statement", label: "Statement" },
+      { href: "/feedback", label: "Share feedback" },
     ],
   },
   {
